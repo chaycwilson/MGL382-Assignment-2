@@ -5,10 +5,10 @@ import numpy as np
 import joblib
 
 # Load your models and scalers
-model_simple_path = '../artifacts/model_1.pkl'
-model_engineered_path = '../artifacts/model_2.pkl'
-scaler_basic_path = '../artifacts/scaler_basic.pkl'
-scaler_engineered_path = '../artifacts/scaler_engineered.pkl'
+model_simple_path = './artifacts/model_1.pkl'
+model_engineered_path = './artifacts/model_2.pkl'
+scaler_basic_path = './artifacts/scaler_basic.pkl'
+scaler_engineered_path = './artifacts/scaler_engineered.pkl'
 
 try:
     model_simple = joblib.load(model_simple_path)
