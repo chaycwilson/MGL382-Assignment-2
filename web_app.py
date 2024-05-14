@@ -111,7 +111,7 @@ app.layout = html.Div(style={'padding': '20px', 'fontFamily': 'Arial', 'backgrou
      dash.dependencies.State('model-type', 'value')])
 def update_output(n_clicks, open_price, high_price, low_price, close_price, volume, model_type):
     if None in [open_price, high_price, low_price, close_price, volume]:
-        return html.Div("Please enter all fields to predict the stock trend.", style={'color': error_color})
+        return html.Div("Please enter all fields to predict whether the stock price will increase or decrease the next day", style={'color': error_color})
 
     features = np.array([[open_price, high_price, low_price, close_price, volume]])
     engineered_features = np.array([[open_price, high_price, low_price, close_price, volume, 0, 0, 0, 0]])
