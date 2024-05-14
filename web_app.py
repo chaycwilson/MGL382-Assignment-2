@@ -4,7 +4,7 @@ from dash.dependencies import Input, Output
 import numpy as np
 import joblib
 
-# Load your models and scalers
+# Loading models and scalers
 model_simple_path = './artifacts/model_1.pkl'
 model_engineered_path = './artifacts/model_2.pkl'
 scaler_basic_path = './artifacts/scaler_basic.pkl'
@@ -37,37 +37,54 @@ except Exception as e:
 # Initialize the Dash app
 app = dash.Dash(__name__)
 
+# Styling dictionaries
+base_color = '#007BFF'
+hover_color = '#0056b3'
+error_color = '#ff0000'
+background_color = '#f8f9fa'
+text_color = '#343a40'
+input_style = {
+    'width': '100%', 'padding': '10px', 'margin': '10px 0', 
+    'border': '2px solid #ccc', 'border-radius': '5px',
+    'transition': 'border-color 0.3s'
+}
+column_style = {
+    'margin': '10px', 'flex': '1'
+}
+button_style = {
+    'fontSize': '16px', 'padding': '10px 20px', 'background-color': base_color,
+    'color': 'white', 'border': 'none', 'border-radius': '5px', 'cursor': 'pointer',
+    'transition': 'background-color 0.3s ease'
+}
+
 # Define the layout
-app.layout = html.Div([
-    html.H1("Stock Price Trend Prediction"),
-    html.Div([
-        html.Div([
+app.layout = html.Div(style={'padding': '20px', 'fontFamily': 'Arial', 'backgroundColor': background_color}, children=[
+    html.H1("Apple Stock Price Trend Prediction", style={'textAlign': 'center', 'color': text_color}),
+    html.H3("Please enter stock prices as they appear (e.g., 19.8457) and large volumes scaled down (e.g., enter 100,000 as '100' for thousands)", style={'textAlign': 'center', 'color': text_color}),
+    html.Div(style={'display': 'flex', 'justifyContent': 'space-between'}, children=[
+        html.Div(style=column_style, children=[
             html.Label("Open Price:"),
-            dcc.Input(id='open', type='number', placeholder="Enter opening price"),
-        ], className="two columns"),
-
-        html.Div([
+            dcc.Input(id='open', type='number', placeholder="Enter opening price", style=input_style),
+        ]),
+        html.Div(style=column_style, children=[
             html.Label("High Price:"),
-            dcc.Input(id='high', type='number', placeholder="Enter highest price"),
-        ], className="two columns"),
-
-        html.Div([
+            dcc.Input(id='high', type='number', placeholder="Enter highest price", style=input_style),
+        ]),
+        html.Div(style=column_style, children=[
             html.Label("Low Price:"),
-            dcc.Input(id='low', type='number', placeholder="Enter lowest price"),
-        ], className="two columns"),
-
-        html.Div([
+            dcc.Input(id='low', type='number', placeholder="Enter lowest price", style=input_style),
+        ]),
+        html.Div(style=column_style, children=[
             html.Label("Close Price:"),
-            dcc.Input(id='close', type='number', placeholder="Enter closing price"),
-        ], className="two columns"),
-
-        html.Div([
+            dcc.Input(id='close', type='number', placeholder="Enter closing price", style=input_style),
+        ]),
+        html.Div(style=column_style, children=[
             html.Label("Volume:"),
-            dcc.Input(id='volume', type='number', placeholder="Enter volume"),
-        ], className="two columns"),
-    ], className="row"),
+            dcc.Input(id='volume', type='number', placeholder="Enter volume", style=input_style),
+        ]),
+    ]),
 
-    html.Label("Select Model:"),
+    html.Label("Select Model:", style={'marginTop': '20px'}),
     dcc.RadioItems(
         id='model-type',
         options=[
@@ -75,11 +92,11 @@ app.layout = html.Div([
             {'label': 'Engineered Model', 'value': 'engineered'}
         ],
         value='simple',
-        style={'marginTop': 20, 'marginBottom': 20}
+        style={'marginTop': '10px', 'marginBottom': '20px'}
     ),
 
-    html.Button('Predict Stock Trend', id='submit-val', n_clicks=0),
-    html.Div(id='output-prediction', style={'marginTop': 20, 'fontSize': 20})
+    html.Button('Predict Stock Trend', id='submit-val', n_clicks=0, style=button_style),
+    html.Div(id='output-prediction', style={'marginTop': '20px', 'fontSize': '20px', 'textAlign': 'center', 'color': text_color})
 ])
 
 # Callback to update prediction
@@ -94,20 +111,24 @@ app.layout = html.Div([
      dash.dependencies.State('model-type', 'value')])
 def update_output(n_clicks, open_price, high_price, low_price, close_price, volume, model_type):
     if None in [open_price, high_price, low_price, close_price, volume]:
-        return "Please enter all fields to predict the stock trend."
+        return html.Div("Please enter all fields to predict the stock trend.", style={'color': error_color})
 
     features = np.array([[open_price, high_price, low_price, close_price, volume]])
-    
+    engineered_features = np.array([[open_price, high_price, low_price, close_price, volume, 0, 0, 0, 0]])
+
     if model_type == 'simple':
         features_scaled = scaler_basic.transform(features)
         prediction = model_simple.predict(features_scaled)
     else:
-        features_scaled = scaler_engineered.transform(features)
+        features_scaled = scaler_engineered.transform(engineered_features)
         prediction = model_engineered.predict(features_scaled)
 
     result = "Increase" if prediction[0] > 0.5 else "Decrease"
-    return f"The predicted stock trend is: {result}"
+    result_color = '#28a745' if result == "Increase" else '#dc3545'
+    
+    return html.Div(f"The predicted stock trend for the next day is: {result}",
+                    style={'marginTop': '20px', 'fontSize': '20px', 'textAlign': 'center', 'color': result_color})
 
-# Run the app
+
 if __name__ == '__main__':
     app.run_server(debug=True)
